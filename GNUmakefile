@@ -26,7 +26,10 @@ help: # default target
 
 .PHONY: ${PHONIES}
 
-export AUTH_SERVICE="127.0.0.0"
+# Useful variables that may need updating:
+export AUTH_SERVICE="127.0.0.0" # Aka localhost
+export DIGITAL_IP := 147.182.164.45
+
 #.______________________________________________________________________________
 #| * build - create the services
 build:
@@ -63,7 +66,6 @@ open-local:
 
 #.______________________________________________________________________________
 #| * open-remote - Open page on digital ocean
-DIGITAL_IP := 206.81.0.37
 open-remote:
 	open http://${DIGITAL_IP}:8000/ &
 	open http://${DIGITAL_IP}:3000/hello &
