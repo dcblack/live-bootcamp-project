@@ -1,5 +1,4 @@
 name: letsgetrusty
-# version: "3.9"
 services:
   app-service:
     build:

@@ -1,5 +1,4 @@
 name: letsgetrusty
-# version: "3.9"
 services:
   app-service:
     image: dcblack42/app-service # specify name of image on Docker Hub
