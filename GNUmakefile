@@ -29,29 +29,45 @@ help: # default target
 # Useful variables that may need updating:
 export AUTH_SERVICE="127.0.0.0" # Aka localhost
 export DIGITAL_IP := 147.182.164.45
+export TCP
+ifdef remote
+TCP:=${DIGITAL_IP}
+else
+TCP:=localhost
+endif
 
 #.______________________________________________________________________________
-#| * build - create the services
-build:
+#| * build-app - create app service
+build-app:
 	cd app-service && cargo build
-	cd auth-service && cargo build
 #.______________________________________________________________________________
-#| * run - run the app locally
-run:
+#| * build-auth - create auth services
+build-auth:
+	cd app-service && cargo build
+#.______________________________________________________________________________
+#| * build - create both services
+build-all: build-app build-auth
+
+#.______________________________________________________________________________
+#| * run-app - run the app locally
+run-app:
 	cd app-service && cargo watch -q -c -w src/ -w assets/ -w templates/ -x run &
 
 #.______________________________________________________________________________
-#| * view-app|auth - open respective web page
-view-app:
-	open http://localhost:8000
-view-auth:
-	open http://localhost:3000
+#| * run-auth - run the auth locally
+run-auth:
+	cd auth-service && cargo watch -q -c -w src/ -w assets/ -w templates/ -x run &
 
 #.______________________________________________________________________________
 #| * dock-up - get the docker environment up and running
 dock-up:
-	cd app-service && cdocker compose build
-	cd app-service && cdocker compose up &
+	cd app-service && docker compose build
+	cd app-service && docker compose up &
+
+#.______________________________________________________________________________
+#| * dock-ps - show docker status
+dock-ps:
+	cd app-service && docker ps
 
 #.______________________________________________________________________________
 #| * dock-down - get the docker environment up and running
@@ -59,22 +75,26 @@ dock-down:
 	cd app-service && docker compose down
 
 #.______________________________________________________________________________
-#| * open-local - Open page on local machine
-open-local:
-	open http://localhost:8000/ &
-	open http://localhost:3000/ &
+#| * view-app - open respective web page
+view-app:
+	open http://${TCP}:8000 &
 
 #.______________________________________________________________________________
-#| * open-remote - Open page on digital ocean
-open-remote:
-	open http://${DIGITAL_IP}:8000/ &
-	open http://${DIGITAL_IP}:3000/hello &
+#| * view-auth - open respective web page
+view-auth:
+	open http://${TCP}:3000/hello &
 
-# Aliases
+#.______________________________________________________________________________
+#| * view-all - open respective web page
+view-all: view-app view-auth
+
+#.______________________________________________________________________________
+#| * Aliases: up, down, local, remote
 up: dock-up
 down: dock-down
-local: open-local
-remote: open-remote
+local: view-all
+remote:
+	$(MAKE) view-all remote=1
 
 #|
 #|------------------------------------------------------------------------------
