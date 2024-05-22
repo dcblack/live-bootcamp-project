@@ -1,3 +1,7 @@
+mod routes;
+mod services;
+mod domain;
+
 use std::error::Error;
 
 use axum::{http::StatusCode, response::IntoResponse, routing::post, serve::Serve, Router};

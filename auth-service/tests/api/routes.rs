@@ -20,6 +20,15 @@ async fn signup_should_return_200() {
 }
 
 #[tokio::test]
+async fn signup_should_return_201_if_valid_input() {
+    let app = TestApp::new().await;
+
+    let response = app.post_signup().await;
+
+    assert_eq!(response.status().as_u16(), 201);
+}
+
+#[tokio::test]
 async fn login_should_return_200() {
     let app = TestApp::new().await;
 
