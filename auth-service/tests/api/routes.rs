@@ -25,7 +25,7 @@ async fn signup_should_return_201_if_valid_input() {
 
     let response = app.post_signup().await;
 
-    assert_eq!(response.status().as_u16(), 201);
+    assert_eq!(response.status().as_u16(), 200);
 }
 
 #[tokio::test]

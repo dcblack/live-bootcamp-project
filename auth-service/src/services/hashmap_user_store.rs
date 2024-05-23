@@ -20,10 +20,10 @@ impl HashmapUserStore {
     // Return `UserStoreError::UserAlreadyExists` if the user already exists,
     // otherwise insert the user into the hashmap and return `Ok(())`.
     if self.users.contains_key(&user.email) {
+      Err(UserStoreError::UserAlreadyExists)
+    } else {
       self.users.insert(user.email.clone(), user);
       Ok(())
-    } else {
-      Err(UserStoreError::UserAlreadyExists)
     }
   }
 
@@ -33,8 +33,11 @@ impl HashmapUserStore {
   // `User` object or a `UserStoreError`.
   // Return `UserStoreError::UserNotFound` if the user can not be found.
   pub fn get_user(&self, email: &str) -> Result<User, UserStoreError> {
-    let user = self.users.get(email).unwrap_or(Err(UserStoreError::UserNotFound));
-    user.clone()
+    let user = self.users.get(email);
+    match user {
+      Some(user) => Ok(user.clone()),
+      None => Err(UserStoreError::UserNotFound)
+    }
   }
 
   // TODO: Implement a public method called `validate_user`, which takes an
@@ -63,8 +66,8 @@ impl HashmapUserStore {
 mod tests {
   use super::*;
 
-  #[tokio::test]
-  async fn test_add_user() {
+  #[test]
+  fn test_add_user() {
     let mut store = HashmapUserStore::default();
 
     // Add first user
@@ -83,13 +86,13 @@ mod tests {
     assert_eq!(added, Err(UserStoreError::UserAlreadyExists));
   }
 
-  #[tokio::test]
-  async fn test_get_user() {
+  #[test]
+  fn test_get_user() {
     let mut store = HashmapUserStore::default();
     let joe = User::new("joe@gmail.com".to_owned(), "xyzzy".to_owned(), false);
-    let added = store.add_user(joe);
+    let added = store.add_user(joe.clone());
     let tom = User::new("tom@gmail.com".to_owned(), "secret".to_owned(), true);
-    let added = store.add_user(tom);
+    let added = store.add_user(tom.clone());
 
     let user = store.get_user("joe@gmail.com");
     assert_eq!(user, Ok(joe));
@@ -97,8 +100,8 @@ mod tests {
     assert_eq!(user, Err(UserStoreError::UserNotFound))
   }
 
-  #[tokio::test]
-  async fn test_validate_user() {
+  #[test]
+  fn test_validate_user() {
     let mut store = HashmapUserStore::default();
     let joe = User::new("joe@gmail.com".to_owned(), "xyzzy".to_owned(), false);
     let added = store.add_user(joe);
