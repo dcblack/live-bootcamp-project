@@ -30,6 +30,12 @@ help: # default target
 export AUTH_SERVICE="127.0.0.0" # Aka localhost
 export DIGITAL_IP := 147.182.164.45
 export TCP
+export GIT_WORK_DIR=$(shell git rev-parse --show-toplevel)
+export PROJ=live-bootcamp-project
+export SOLN=live-bootcamp-solution
+export APP_DIR="${GIT_WORK_DIR}/app-service"
+export AUTH_DIR="${GIT_WORK_DIR}/auth-service"
+
 ifdef remote
 TCP:=${DIGITAL_IP}
 else
@@ -39,11 +45,11 @@ endif
 #.______________________________________________________________________________
 #| * build-app - create app service
 build-app:
-	cd app-service && cargo build
+	cd "${APP_DIR}" && cargo build
 #.______________________________________________________________________________
 #| * build-auth - create auth services
 build-auth:
-	cd app-service && cargo build
+	cd "${AUTH_DIR}" && cargo build
 #.______________________________________________________________________________
 #| * build - create both services
 build-all: build-app build-auth
@@ -51,28 +57,28 @@ build-all: build-app build-auth
 #.______________________________________________________________________________
 #| * run-app - run the app locally
 run-app:
-	cd app-service && cargo watch -q -c -w src/ -w assets/ -w templates/ -x run &
+	cd "${APP_DIR}" && cargo watch -q -c -w src/ -w assets/ -w templates/ -x run &
 
 #.______________________________________________________________________________
 #| * run-auth - run the auth locally
 run-auth:
-	cd auth-service && cargo watch -q -c -w src/ -w assets/ -w templates/ -x run &
+	cd "${AUTH_DIR}" && cargo watch -q -c -w src/ -w assets/ -w templates/ -x run &
 
 #.______________________________________________________________________________
 #| * dock-up - get the docker environment up and running
 dock-up:
-	cd app-service && docker compose build
-	cd app-service && docker compose up &
+	cd "${APP_DIR}" && docker compose build
+	cd "${APP_DIR}" && docker compose up &
 
 #.______________________________________________________________________________
 #| * dock-ps - show docker status
 dock-ps:
-	cd app-service && docker ps
+	cd "${APP_DIR}" && docker ps
 
 #.______________________________________________________________________________
 #| * dock-down - get the docker environment up and running
 dock-down:
-	cd app-service && docker compose down
+	cd "${APP_DIR}" && docker compose down
 
 #.______________________________________________________________________________
 #| * view-app - open respective web page
@@ -90,12 +96,9 @@ view-all: view-app view-auth
 
 #.______________________________________________________________________________
 #| * compare-solution - use BeyondCompare to compare against Bogdan's solution
-GIT_WORK_ROOT=$(shell git rev-parse --show-toplevel)
-PROJ=live-bootcamp-project
-SOLN=live-bootcamp-solution
 compare-solution:
-	cd $(dir ${GIT_WORK_ROOT}) &&
-	byc ${PROJ} ${SOLN}
+	cd $(dir ${GIT_WORK_DIR})\
+	&& byc ${PROJ} ${SOLN}
 
 #.______________________________________________________________________________
 #| * Aliases: up, down, local, remote
