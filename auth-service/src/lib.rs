@@ -16,7 +16,6 @@ use axum::{
 };
 use std::sync::Arc;
 use tower_http::services::ServeDir;
-use app_state::AppState;
 
 pub struct Application {
     server: Serve<Router, Router>,
