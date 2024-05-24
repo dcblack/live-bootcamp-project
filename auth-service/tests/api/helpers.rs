@@ -7,8 +7,8 @@ pub struct TestApp {
 
 impl TestApp {
     pub async fn new() -> Self {
-        let user_store = crate::app_state::UserStoreType::default();
-        let app_state = Application::app_state::AppState::new(user_store);
+        let user_store = auth_service::app_state::UserStoreType::default();
+        let app_state = auth_service::app_state::AppState::new(user_store);
         let app = Application::build( app_state,"127.0.0.1:0")
             .await
             .expect("Failed to build app");
