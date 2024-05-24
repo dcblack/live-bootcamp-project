@@ -89,7 +89,17 @@ view-auth:
 view-all: view-app view-auth
 
 #.______________________________________________________________________________
+#| * compare-solution - use BeyondCompare to compare against Bogdan's solution
+GIT_WORK_ROOT=$(shell git rev-parse --show-toplevel)
+PROJ=live-bootcamp-project
+SOLN=live-bootcamp-solution
+compare-solution:
+	cd $(dir ${GIT_WORK_ROOT}) &&
+	byc ${PROJ} ${SOLN}
+
+#.______________________________________________________________________________
 #| * Aliases: up, down, local, remote
+byc: compare-solution
 up: dock-up
 down: dock-down
 local: view-all
