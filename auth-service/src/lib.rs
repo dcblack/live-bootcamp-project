@@ -1,21 +1,22 @@
-pub mod routes;
-pub mod services;
-pub mod domain;
-pub mod app_state;
-
 use std::error::Error;
 
+use app_state::AppState;
 use axum::{
-    Router,
-    extract::State,
     http::StatusCode,
-    response::IntoResponse,
-    routing::get,
+    response::{IntoResponse, Response},
     routing::post,
     serve::Serve,
+    Json, Router,
 };
-use std::sync::Arc;
+use domain::AuthAPIError;
+use routes::{login, logout, signup, verify_2fa, verify_token};
+use serde::{Deserialize, Serialize};
 use tower_http::services::ServeDir;
+
+pub mod app_state;
+pub mod domain;
+pub mod routes;
+pub mod services;
 
 pub struct Application {
     server: Serve<Router, Router>,
@@ -23,7 +24,7 @@ pub struct Application {
 }
 
 impl Application {
-    pub async fn build(app_state: app_state::AppState, address: &str) -> Result<Self, Box<dyn Error>> {
+    pub async fn build(app_state: AppState, address: &str) -> Result<Self, Box<dyn Error>> {
         let router = Router::new()
             .nest_service("/", ServeDir::new("assets"))
             .route("/signup", post(signup))
@@ -46,22 +47,23 @@ impl Application {
     }
 }
 
-async fn signup() -> impl IntoResponse {
-    StatusCode::OK.into_response()
+#[derive(Serialize, Deserialize)]
+pub struct ErrorResponse {
+    pub error: String,
 }
 
-async fn login() -> impl IntoResponse {
-    StatusCode::OK.into_response()
-}
-
-async fn verify_2fa() -> impl IntoResponse {
-    StatusCode::OK.into_response()
-}
-
-async fn logout() -> impl IntoResponse {
-    StatusCode::OK.into_response()
-}
-
-async fn verify_token() -> impl IntoResponse {
-    StatusCode::OK.into_response()
+impl IntoResponse for AuthAPIError {
+    fn into_response(self) -> Response {
+        let (status, error_message) = match self {
+            AuthAPIError::UserAlreadyExists => (StatusCode::CONFLICT, "User already exists"),
+            AuthAPIError::InvalidCredentials => (StatusCode::BAD_REQUEST, "Invalid credentials"),
+            AuthAPIError::UnexpectedError => {
+                (StatusCode::INTERNAL_SERVER_ERROR, "Unexpected error")
+            }
+        };
+        let body = Json(ErrorResponse {
+            error: error_message.to_string(),
+        });
+        (status, body).into_response()
+    }
 }
