@@ -39,28 +39,28 @@ async fn should_return_400_if_invalid_input() {
 
     let input = [
         serde_json::json!({
-            "email": "",
+            "email": "", // empty email
             "password": "password123",
             "requires2FA": true
         }),
         serde_json::json!({
             "email": random_email,
-            "password": "",
+            "password": "", // empty password
             "requires2FA": true
         }),
         serde_json::json!({
-            "email": "",
-            "password": "",
+            "email": "",    // empty email
+            "password": "", // AND empty password
             "requires2FA": true
         }),
         serde_json::json!({
-            "email": "invalid_email",
+            "email": "invalid_email", // missing @domain
             "password": "password123",
             "requires2FA": true
         }),
         serde_json::json!({
             "email": random_email,
-            "password": "invalid",
+            "password": "invalid", // too short password
             "requires2FA": true
         }),
     ];
