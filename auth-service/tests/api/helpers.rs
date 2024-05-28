@@ -7,6 +7,13 @@ use auth_service::{
 
 use uuid::Uuid;
 
+pub const GREAT_PASSWORD: &str = "Decent-Pa55word!";
+//pub const WRONG_PASSWORD: &str = "Another-Pa$$w0rd";
+//pub const THIRD_PASSWORD: &str = "Alternate-Pa$$w0rd";
+//pub const SPECIAL_CHARS: &str = "Li!1";
+pub const SHORT_PASSWORD: &str = "_bCdef$12ee"; // with valid characters
+pub const EMPTY_PASSWORD: &str = "";
+
 pub struct TestApp {
     pub address: String,
     pub http_client: reqwest::Client,
@@ -54,12 +61,16 @@ impl TestApp {
             .expect("Failed to execute request.")
     }
 
-    pub async fn post_login(&self) -> reqwest::Response {
+    pub async fn post_login<Body>(&self, body: &Body) -> reqwest::Response
+        where
+          Body: serde::Serialize,
+    {
         self.http_client
-            .post(&format!("{}/login", &self.address))
-            .send()
-            .await
-            .expect("Failed to execute request.")
+          .post(&format!("{}/login", &self.address))
+          .json(body)
+          .send()
+          .await
+          .expect("Failed to execute request.")
     }
 
     pub async fn post_logout(&self) -> reqwest::Response {

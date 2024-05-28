@@ -11,8 +11,13 @@ impl Password {
     }
 }
 
+const MIN_PASSWORD_LENGTH: usize = 12;
 fn validate_password(s: &str) -> bool {
-    s.len() >= 8
+    s.len() >= MIN_PASSWORD_LENGTH
+      && s.chars().any(|c| c.is_digit(10))
+      && s.chars().any(|c| c.is_uppercase())
+      && s.chars().any(|c| c.is_lowercase())
+      && s.chars().any(|c| c.is_ascii_punctuation())
 }
 
 impl AsRef<str> for Password {
@@ -21,6 +26,7 @@ impl AsRef<str> for Password {
     }
 }
 
+//------------------------------------------------------------------------------
 #[cfg(test)]
 mod tests {
     use super::Password;
@@ -33,9 +39,13 @@ mod tests {
         let password = "".to_owned();
         assert!(Password::parse(password).is_err());
     }
+
+    const SHORT_PASSWORD: &str = "_bCdef$12ee"; // with valid characters
+    const SPECIAL_CHARS: &str = "Li!1";
+
     #[test]
-    fn string_less_than_8_characters_is_rejected() {
-        let password = "1234567".to_owned();
+    fn string_less_than_min_characters_is_rejected() {
+        let password = SHORT_PASSWORD.to_owned();
         assert!(Password::parse(password).is_err());
     }
 
@@ -44,7 +54,8 @@ mod tests {
 
     impl quickcheck::Arbitrary for ValidPasswordFixture {
         fn arbitrary<G: quickcheck::Gen>(g: &mut G) -> Self {
-            let password = FakePassword(8..30).fake_with_rng(g);
+            let mut password:String= FakePassword(12..28).fake_with_rng(g);
+            password.push_str(SPECIAL_CHARS); // force special characters
             Self(password)
         }
     }

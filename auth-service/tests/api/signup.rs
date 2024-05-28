@@ -2,6 +2,13 @@ use auth_service::{routes::SignupResponse, ErrorResponse};
 
 use crate::helpers::{get_random_email, TestApp};
 
+use crate::helpers::{
+    GREAT_PASSWORD,
+    //WRONG_PASSWORD,
+    SHORT_PASSWORD,
+    EMPTY_PASSWORD,
+};
+
 #[tokio::test]
 async fn should_return_201_if_valid_input() {
     let app = TestApp::new().await;
@@ -10,7 +17,7 @@ async fn should_return_201_if_valid_input() {
 
     let signup_body = serde_json::json!({
         "email": random_email,
-        "password": "password123",
+        "password": GREAT_PASSWORD,
         "requires2FA": true
     });
 
@@ -40,27 +47,27 @@ async fn should_return_400_if_invalid_input() {
     let input = [
         serde_json::json!({
             "email": "", // empty email
-            "password": "password123",
+            "password": GREAT_PASSWORD,
             "requires2FA": true
         }),
         serde_json::json!({
             "email": random_email,
-            "password": "", // empty password
+            "password": EMPTY_PASSWORD, // empty password
             "requires2FA": true
         }),
         serde_json::json!({
             "email": "",    // empty email
-            "password": "", // AND empty password
+            "password": EMPTY_PASSWORD, // AND empty password
             "requires2FA": true
         }),
         serde_json::json!({
             "email": "invalid_email", // missing @domain
-            "password": "password123",
+            "password": GREAT_PASSWORD,
             "requires2FA": true
         }),
         serde_json::json!({
             "email": random_email,
-            "password": "invalid", // too short password
+            "password": SHORT_PASSWORD, // too short password
             "requires2FA": true
         }),
     ];
@@ -83,12 +90,11 @@ async fn should_return_400_if_invalid_input() {
 #[tokio::test]
 async fn should_return_409_if_email_already_exists() {
     let app = TestApp::new().await;
-
     let random_email = get_random_email();
 
     let signup_body = serde_json::json!({
         "email": random_email,
-        "password": "password123",
+        "password": GREAT_PASSWORD,
         "requires2FA": true
     });
 
@@ -96,6 +102,7 @@ async fn should_return_409_if_email_already_exists() {
 
     assert_eq!(response.status().as_u16(), 201);
 
+    // Signup a second time with the same credentials
     let response = app.post_signup(&signup_body).await;
 
     assert_eq!(response.status().as_u16(), 409);

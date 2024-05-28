@@ -46,12 +46,14 @@ impl UserStore for HashmapUserStore {
 mod tests {
     use super::*;
 
+    const GREAT_PASSWORD: &str = "Decent-Pa55word!";
+    const WRONG_PASSWORD: &str = "Another-Pa$$w0rd";
     #[tokio::test]
     async fn test_add_user() {
         let mut user_store = HashmapUserStore::default();
         let user = User {
             email: Email::parse("test@example.com".to_owned()).unwrap(),
-            password: Password::parse("password".to_owned()).unwrap(),
+            password: Password::parse(GREAT_PASSWORD.to_owned()).unwrap(),
             requires_2fa: false,
         };
 
@@ -71,7 +73,7 @@ mod tests {
 
         let user = User {
             email: email.clone(),
-            password: Password::parse("password".to_owned()).unwrap(),
+            password: Password::parse(GREAT_PASSWORD.to_owned()).unwrap(),
             requires_2fa: false,
         };
 
@@ -92,7 +94,7 @@ mod tests {
     async fn test_validate_user() {
         let mut user_store = HashmapUserStore::default();
         let email = Email::parse("test@example.com".to_owned()).unwrap();
-        let password = Password::parse("password".to_owned()).unwrap();
+        let password = Password::parse(GREAT_PASSWORD.to_owned()).unwrap();
 
         let user = User {
             email: email.clone(),
@@ -106,7 +108,7 @@ mod tests {
         assert_eq!(result, Ok(()));
 
         // Test validating a user that exists with incorrect password
-        let wrong_password = Password::parse("wrongpassword".to_owned()).unwrap();
+        let wrong_password = Password::parse(WRONG_PASSWORD.to_owned()).unwrap();
         let result = user_store.validate_user(&email, &wrong_password).await;
         assert_eq!(result, Err(UserStoreError::InvalidCredentials));
 
