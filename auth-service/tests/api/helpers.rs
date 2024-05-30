@@ -8,7 +8,7 @@ use auth_service::{
 use uuid::Uuid;
 
 pub const GREAT_PASSWORD: &str = "Decent-Pa55word!";
-//pub const WRONG_PASSWORD: &str = "Another-Pa$$w0rd";
+pub const WRONG_PASSWORD: &str = "Another-Pa$$w0rd";
 //pub const THIRD_PASSWORD: &str = "Alternate-Pa$$w0rd";
 //pub const SPECIAL_CHARS: &str = "Li!1";
 pub const SHORT_PASSWORD: &str = "_bCdef$12ee"; // with valid characters

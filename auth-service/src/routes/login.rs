@@ -15,27 +15,11 @@ pub async fn login(
     let password =
       Password::parse(request.password.clone()).map_err(|_| AuthAPIError::InvalidCredentials)?;
     let user_store = state.user_store.read().await;
-    match user_store.get_user(&email).await {
-        Err(_) => { return Err(AuthAPIError::InvalidCredentials); },
-        Ok(user) => {
-            // Check request against the password
-            if user.password == password {
-            if user.requires_2fa {
-                let response = Json(LoginResponse {
-                    message: "Login successful!".to_string(),
-                });
-                return Ok((StatusCode::ACCEPTED, response));
-            } else {
-                let response = Json(LoginResponse {
-                    message: "Login successful!".to_string(),
-                });
-                return Ok((StatusCode::ACCEPTED, response));
-            }
-          } else {
-            return Err(AuthAPIError::InvalidCredentials);
-          }
-        }
-    }
+    let user = match user_store.get_user(&email).await {
+        Ok(user) => { user },
+        Err(_) => { return Err(AuthAPIError::IncorrectCredentials); },
+    };
+    Ok(StatusCode::OK.into_response())
 }
 
 #[derive(Deserialize,Clone)]
