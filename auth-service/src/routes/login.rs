@@ -26,9 +26,8 @@ pub async fn login(
         return (jar, Err(AuthAPIError::IncorrectCredentials));
     }
 
-    let user = match user_store.get_user(&email).await {
-        Ok(user) => user,
-        Err(_) => return (jar, Err(AuthAPIError::IncorrectCredentials)),
+    if let Err(_error) = user_store.get_user(&email).await {
+        return (jar, Err(AuthAPIError::IncorrectCredentials));
     };
     // Check password
     let auth_cookie = match generate_auth_cookie(&email) {
