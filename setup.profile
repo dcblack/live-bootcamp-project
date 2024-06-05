@@ -58,6 +58,7 @@ else
 fi
 # shellcheck disable=SC2149
 alias setup="source '${SETUP_PATH}'"
+alias Do-local="${PROJECT_DIR}/docker.sh"
 
 if [[ "$1" == "-v" ]]; then
   ( Check_environment )
