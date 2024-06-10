@@ -4,7 +4,10 @@ use reqwest::cookie::Jar;
 
 use auth_service::{
     app_state::AppState,
-    services::hashmap_user_store::HashmapUserStore,
+    services::{
+      hashmap_user_store::HashmapUserStore,
+      hashset_banned_token_store::HashsetBannedTokenStore,
+    },
     utils::constants::test,
     Application,
 };
@@ -20,6 +23,7 @@ pub const EMPTY_PASSWORD: &str = "";
 
 pub struct TestApp {
     pub address: String,
+    pub banned_token_store: Arc<RwLock<HashsetBannedTokenStore>>,
     pub cookie_jar: Arc<Jar>,
     pub http_client: reqwest::Client,
 }
@@ -27,7 +31,8 @@ pub struct TestApp {
 impl TestApp {
     pub async fn new() -> Self {
         let user_store = Arc::new(RwLock::new(HashmapUserStore::default()));
-        let app_state = AppState::new(user_store);
+        let banned_token_store = Arc::new(RwLock::new(HashsetBannedTokenStore::default()));
+        let app_state = AppState::new(user_store,banned_token_store.clone());
 
         let app = Application::build(app_state, test::APP_ADDRESS)
             .await
@@ -47,6 +52,7 @@ impl TestApp {
         Self {
             address,
             cookie_jar,
+            banned_token_store,
             http_client,
         }
     }
