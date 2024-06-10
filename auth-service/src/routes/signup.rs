@@ -25,12 +25,11 @@ pub async fn signup(
 
     if user_store.add_user(user).await.is_err() {
         return Err(AuthAPIError::UnexpectedError);
-    } else {
-        let response = Json(SignupResponse {
-            message: "User created successfully!".to_string(),
-        });
-        Ok((StatusCode::CREATED, response))
     }
+    let response = Json(SignupResponse {
+        message: "User created successfully!".to_string(),
+    });
+    Ok((StatusCode::CREATED, response))
 
 }
 
