@@ -59,6 +59,7 @@ async fn handle_2fa(
   {
     println!("{FAIL}Unable to add 2FA code for {:?}", email);
     return (jar, Err(AuthAPIError::IncorrectCredentials));
+    //return (jar, Err(AuthAPIError::UnexpectedError));
   }
   println!("{NOTE}Added 2FA code for {:?}", email);
   if let Err(_e) = state.email_client
