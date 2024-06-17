@@ -11,6 +11,8 @@ use crate::{
   utils::auth::generate_auth_cookie,
 };
 
+const FAIL: &str = "[1;91m⚠ FAIL: [00m";
+
 pub async fn verify_2fa(
   State(state): State<AppState>,
   jar: CookieJar,
@@ -52,14 +54,14 @@ pub async fn verify_2fa(
   }
 
   if two_fa_code_store.remove_code(&email).await.is_err() {
-    println!("Unable to remove code {:?}", email);
+    println!("{FAIL}Unable to remove code {:?}", email);
     return (jar, Err(AuthAPIError::UnexpectedError));
   }
 
   let cookie = match generate_auth_cookie(&email) {
     Ok(cookie) => cookie,
     Err(_) => {
-      println!("Unable to generate auth cookie {:?}", email);
+      println!("{FAIL}Unable to generate auth cookie {:?}", email);
       return (jar, Err(AuthAPIError::UnexpectedError));
     }
   };

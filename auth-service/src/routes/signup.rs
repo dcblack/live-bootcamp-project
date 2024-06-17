@@ -1,6 +1,8 @@
 use axum::{extract::State, http::StatusCode, response::IntoResponse, Json};
 use serde::{Deserialize, Serialize};
 
+const FAIL: &str = "[1;91m⚠ FAIL: [00m";
+
 use crate::{
     app_state::AppState,
     domain::{AuthAPIError, Email, Password, User},
@@ -23,7 +25,8 @@ pub async fn signup(
         return Err(AuthAPIError::UserAlreadyExists);
     }
 
-    if user_store.add_user(user).await.is_err() {
+    if user_store.add_user(user.clone()).await.is_err() {
+        println!("{FAIL}Unable to add user for {:?}", &user.email);
         return Err(AuthAPIError::UnexpectedError);
     }
     let response = Json(SignupResponse {
