@@ -18,6 +18,8 @@ use crate::helpers::{
   //EMPTY_PASSWORD,
   };
 
+const NOTE: &str = "[1;93mNOTE: [00m";
+
 #[tokio::test]
 async fn verify_2fa_should_return_400_if_invalid_input() {
   let app = TestApp::new().await;
@@ -120,6 +122,7 @@ async fn should_return_401_if_old_code() {
         "password": GREAT_PASSWORD
     });
 
+  println!("{NOTE}First login for {:?}", random_email.clone());
   let response = app.post_login(&login_body).await;
 
   assert_eq!(response.status().as_u16(), 206);
@@ -142,22 +145,24 @@ async fn should_return_401_if_old_code() {
     .await
     .unwrap();
 
-  let code = attempt_n_code.1.as_ref();
+  let first_code = attempt_n_code.1.as_ref();
 
   // Second login call
+  println!("{NOTE}Second login for {:?}", random_email.clone());
 
   let response = app.post_login(&login_body).await;
 
   assert_eq!(response.status().as_u16(), 206);
 
-  // 2FA attempt with old login_attempt_id and code
+  // 2FA attempt with old login_attempt_id and first code
 
   let request_body = serde_json::json!({
-        "email": random_email,
+        "email": random_email.clone(),
         "loginAttemptId": login_attempt_id,
-        "2FACode": code
+        "2FACode": first_code
     });
 
+  println!("{NOTE}Verify 2FA for {:?}", random_email.clone());
   let response = app.post_verify_2fa(&request_body).await;
 
   assert_eq!(response.status().as_u16(), 401);

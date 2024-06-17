@@ -8,7 +8,8 @@ use crate::{
   //routes::LoginResponse::TwoFactorAuth,
 };
 
-const WARN: &str = "[1;91m⚠ WARNING: [00m";
+const FAIL: &str = "[1;91m⚠ FAIL: [00m";
+const NOTE: &str = "[1;93mNOTE: [00m";
 
 pub async fn login(
   State(state): State<AppState>,
@@ -56,15 +57,16 @@ async fn handle_2fa(
     .add_code(email.clone(),login_attempt_id.clone(),two_fa_code.clone())
     .await
   {
-    println!("{WARN}Unable to add code {:?}", email);
-    return (jar, Err(AuthAPIError::UnexpectedError));
+    println!("{FAIL}Unable to add 2FA code for {:?}", email);
+    return (jar, Err(AuthAPIError::IncorrectCredentials));
   }
+  println!("{NOTE}Added 2FA code for {:?}", email);
   if let Err(_e) = state.email_client
     .write().await
     .send_email(&email,"Verify login",two_fa_code.as_ref())
     .await
   {
-    println!("{WARN}Unable to send email {:?}", email);
+    println!("{FAIL}Unable to send email to {:?}", email);
     return (jar, Err(AuthAPIError::UnexpectedError));
   }
   let response = Json(LoginResponse::TwoFactorAuth(
@@ -87,7 +89,7 @@ async fn handle_no_2fa(
   let auth_cookie = match generate_auth_cookie(email) {
     Ok(cookie) => cookie,
     Err(_) => {
-      println!("{WARN}Unable to generate cookie {:?}", email);
+      println!("{FAIL}Unable to generate cookie for {:?}", email);
       return (jar, Err(AuthAPIError::UnexpectedError));
     }
   };
