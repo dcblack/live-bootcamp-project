@@ -3,7 +3,6 @@ use chrono::Utc;
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Validation};
 use serde::{Deserialize, Serialize};
 use crate::app_state::BannedTokenStoreType;
-use crate::domain::{AuthAPIError, BannedTokenStore};
 
 use crate::domain::email::Email;
 use super::constants::{JWT_COOKIE_NAME, JWT_SECRET};
@@ -97,7 +96,7 @@ pub struct Claims {
 mod tests {
   use std::sync::Arc;
   use tokio::sync::RwLock;
-  use crate::{domain::BannedTokenStore,services::hashset_banned_token_store::HashsetBannedTokenStore};
+  use crate::{services::hashset_banned_token_store::HashsetBannedTokenStore};
   use super::*;
 
   #[tokio::test]

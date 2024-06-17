@@ -1,7 +1,6 @@
 use axum::{extract::State, http::StatusCode, response::IntoResponse, Json};
 use serde::{Deserialize, Serialize};
 use crate::{
-  services::hashset_banned_token_store::HashsetBannedTokenStore,
   domain::{AuthAPIError},
   utils::{
     auth::validate_token,
