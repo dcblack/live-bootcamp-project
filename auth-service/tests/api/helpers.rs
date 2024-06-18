@@ -1,14 +1,12 @@
+use reqwest::cookie::Jar;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use reqwest::cookie::Jar;
 
 use auth_service::{
   app_state::AppState,
   services::{
-    hashmap_user_store::HashmapUserStore,
-    hashset_banned_token_store::HashsetBannedTokenStore,
-    hashmap_two_fa_code_store::HashmapTwoFACodeStore,
-    mock_email_client::MockEmailClient,
+    hashmap_two_fa_code_store::HashmapTwoFACodeStore, hashmap_user_store::HashmapUserStore,
+    hashset_banned_token_store::HashsetBannedTokenStore, mock_email_client::MockEmailClient,
   },
   utils::constants::test,
   Application,
@@ -22,6 +20,12 @@ pub const WRONG_PASSWORD: &str = "Another-Pa$$w0rd";
 //pub const SPECIAL_CHARS: &str = "Li!1";
 pub const SHORT_PASSWORD: &str = "_bCdef$12ee"; // with valid characters
 pub const EMPTY_PASSWORD: &str = "";
+
+// Useful for highlighting messages
+pub const NOTE: &str = "[1;96mNOTE: [00m";
+pub const WARN: &str = "[1;93m⚠ WARNING: [00m";
+pub const ALERT: &str = "[1;95m⚠ ALERT: [00m";
+pub const FAIL: &str = "[1;91m⚠ FAIL: [00m";
 
 pub struct TestApp {
   pub address: String,
@@ -38,7 +42,12 @@ impl TestApp {
     let banned_token_store = Arc::new(RwLock::new(HashsetBannedTokenStore::default()));
     let two_fa_code_store = Arc::new(RwLock::new(HashmapTwoFACodeStore::default()));
     let email_client = Arc::new(RwLock::new(MockEmailClient));
-    let app_state = AppState::new(user_store, banned_token_store.clone(), two_fa_code_store.clone(), email_client.clone());
+    let app_state = AppState::new(
+      user_store,
+      banned_token_store.clone(),
+      two_fa_code_store.clone(),
+      email_client.clone(),
+    );
 
     let app = Application::build(app_state, test::APP_ADDRESS)
       .await
@@ -66,67 +75,73 @@ impl TestApp {
   }
 
   pub async fn get_root(&self) -> reqwest::Response {
-    self.http_client
-        .get(&format!("{}/", &self.address))
-        .send()
-        .await
-        .expect("Failed to execute request.")
+    self
+      .http_client
+      .get(&format!("{}/", &self.address))
+      .send()
+      .await
+      .expect("Failed to execute request.")
   }
 
   pub async fn post_signup<Body>(&self, body: &Body) -> reqwest::Response
   where
     Body: serde::Serialize,
   {
-    self.http_client
-        .post(&format!("{}/signup", &self.address))
-        .json(body)
-        .send()
-        .await
-        .expect("Failed to execute request.")
+    self
+      .http_client
+      .post(&format!("{}/signup", &self.address))
+      .json(body)
+      .send()
+      .await
+      .expect("Failed to execute request.")
   }
 
   pub async fn post_login<Body>(&self, body: &Body) -> reqwest::Response
   where
     Body: serde::Serialize,
   {
-    self.http_client
-        .post(&format!("{}/login", &self.address))
-        .json(body)
-        .send()
-        .await
-        .expect("Failed to execute request.")
+    self
+      .http_client
+      .post(&format!("{}/login", &self.address))
+      .json(body)
+      .send()
+      .await
+      .expect("Failed to execute request.")
   }
 
   pub async fn post_logout(&self) -> reqwest::Response {
-    self.http_client
-        .post(format!("{}/logout", &self.address))
-        .send()
-        .await
-        .expect("Failed to execute request.")
+    self
+      .http_client
+      .post(format!("{}/logout", &self.address))
+      .send()
+      .await
+      .expect("Failed to execute request.")
   }
 
   pub async fn post_verify_token<Body>(&self, body: &Body) -> reqwest::Response
   where
     Body: serde::Serialize,
   {
-    self.http_client
-        .post(format!("{}/verify-token", &self.address))
-        .json(body)
-        .send()
-        .await
-        .expect("Failed to execute request.")
+    self
+      .http_client
+      .post(format!("{}/verify-token", &self.address))
+      .json(body)
+      .send()
+      .await
+      .expect("Failed to execute request.")
   }
 
   pub async fn post_verify_2fa<Body>(&self, body: &Body) -> reqwest::Response
   where
     Body: serde::Serialize,
   {
-    self.http_client
-        .post(format!("{}/verify-2fa", &self.address))
-        .json(body)
-        .send()
-        .await
-        .expect("Failed to execute request.")
+    self
+      .http_client
+      .post(format!("{}/verify-2fa", &self.address))
+      .json(body)
+      .send()
+      .await
+      .expect("Failed to execute request.")
   }
 }
 
