@@ -1,167 +1,158 @@
-use auth_service::{utils::constants::JWT_COOKIE_NAME, ErrorResponse, };
-use reqwest::Url;
+use crate::helpers::{get_random_email, TestApp, GREAT_PASSWORD};
 use auth_service::domain::BannedTokenStore;
-use crate::helpers::{
-    TestApp,
-    GREAT_PASSWORD,
-    get_random_email,
-};
+use auth_service::{utils::constants::JWT_COOKIE_NAME, ErrorResponse};
+use reqwest::Url;
 
 #[tokio::test]
 async fn should_return_200_if_valid_jwt_cookie() {
-    let app = TestApp::new().await;
+  let app = TestApp::new().await;
 
-    let random_email = get_random_email();
-    let signup_body = serde_json::json!({
-        "email": random_email,
-        "password": GREAT_PASSWORD,
-        "requires2FA": false
-    });
+  let random_email = get_random_email();
+  let signup_body = serde_json::json!({
+      "email": random_email,
+      "password": GREAT_PASSWORD,
+      "requires2FA": false
+  });
 
-    let response = app.post_signup(&signup_body).await;
-    assert_eq!(response.status().as_u16(), 201);
+  let response = app.post_signup(&signup_body).await;
+  assert_eq!(response.status().as_u16(), 201);
 
-    let login_body = serde_json::json!({
-        "email": random_email,
-        "password": GREAT_PASSWORD,
-    });
+  let login_body = serde_json::json!({
+      "email": random_email,
+      "password": GREAT_PASSWORD,
+  });
 
-    // Login
-    let response = app.post_login(&login_body).await;
-    assert_eq!(response.status().as_u16(), 200);
+  // Login
+  let response = app.post_login(&login_body).await;
+  assert_eq!(response.status().as_u16(), 200);
 
-    let auth_cookie = response
-        .cookies()
-        .find(|cookie| cookie.name() == JWT_COOKIE_NAME)
-        .expect("No auth cookie found");
-    assert!(!auth_cookie.value().is_empty());
+  let auth_cookie = response
+    .cookies()
+    .find(|cookie| cookie.name() == JWT_COOKIE_NAME)
+    .expect("No auth cookie found");
+  assert!(!auth_cookie.value().is_empty());
 
-    let token = auth_cookie.value();
+  let token = auth_cookie.value();
 
-    // Logout
-    let response = app.post_logout().await;
-    assert_eq!(response.status().as_u16(), 200);
+  // Logout
+  let response = app.post_logout().await;
+  assert_eq!(response.status().as_u16(), 200);
 
-    let auth_cookie = response
-        .cookies()
-        .find(|cookie| cookie.name() == JWT_COOKIE_NAME)
-        .expect("No auth cookie found");
-    assert!(auth_cookie.value().is_empty());
+  let auth_cookie = response
+    .cookies()
+    .find(|cookie| cookie.name() == JWT_COOKIE_NAME)
+    .expect("No auth cookie found");
+  assert!(auth_cookie.value().is_empty());
 
-    let banned_token_store = app.banned_token_store.read().await;
-    let banned = banned_token_store
-      .is_banned(token)
-      .await;
-    assert!(banned);
+  let banned_token_store = app.banned_token_store.read().await;
+  let banned = banned_token_store.is_banned(token).await;
+  assert!(banned);
 
-    // let verify_body = serde_json::json!({ "token": token });
-    // let response = app.post_verify_token(&verify_body).await;
-    // assert_ne!(response.status().as_u16(), 200);
-
+  // let verify_body = serde_json::json!({ "token": token });
+  // let response = app.post_verify_token(&verify_body).await;
+  // assert_ne!(response.status().as_u16(), 200);
 }
 
 #[tokio::test]
 async fn should_return_400_if_jwt_cookie_missing() {
-    let app = TestApp::new().await;
+  let app = TestApp::new().await;
 
-    let response = app.post_logout().await;
-    assert_eq!(
-        response.status().as_u16(),
-        400,
-        "The API did not return a 400 BAD REQUEST",
-    );
+  let response = app.post_logout().await;
+  assert_eq!(
+    response.status().as_u16(),
+    400,
+    "The API did not return a 400 BAD REQUEST",
+  );
 
-    let auth_cookie = response
-        .cookies()
-        .find(|cookie| cookie.name() == JWT_COOKIE_NAME);
+  let auth_cookie = response
+    .cookies()
+    .find(|cookie| cookie.name() == JWT_COOKIE_NAME);
 
-    assert!(auth_cookie.is_none());
-    assert_eq!(
-        response
-            .json::<ErrorResponse>()
-            .await
-            .expect("Could not deserialize response body to ErrorResponse")
-            .error,
-        "Missing auth token".to_owned()
-    );
+  assert!(auth_cookie.is_none());
+  assert_eq!(
+    response
+      .json::<ErrorResponse>()
+      .await
+      .expect("Could not deserialize response body to ErrorResponse")
+      .error,
+    "Missing auth token".to_owned()
+  );
 }
 
 #[tokio::test]
 async fn should_return_400_if_logout_called_twice_in_a_row() {
-    let app = TestApp::new().await;
+  let app = TestApp::new().await;
 
-    let random_email = get_random_email();
+  let random_email = get_random_email();
 
-    // Signup
-    let signup_body = serde_json::json!({
-        "email": random_email,
-        "password": GREAT_PASSWORD,
-        "requires2FA": false
-    });
-    let response = app.post_signup(&signup_body).await;
-    assert_eq!(response.status().as_u16(), 201);
+  // Signup
+  let signup_body = serde_json::json!({
+      "email": random_email,
+      "password": GREAT_PASSWORD,
+      "requires2FA": false
+  });
+  let response = app.post_signup(&signup_body).await;
+  assert_eq!(response.status().as_u16(), 201);
 
-    let login_body = serde_json::json!({
-        "email": random_email,
-        "password": GREAT_PASSWORD,
-    });
+  let login_body = serde_json::json!({
+      "email": random_email,
+      "password": GREAT_PASSWORD,
+  });
 
-    // Login
-    let response = app.post_login(&login_body).await;
-    assert_eq!(response.status().as_u16(), 200);
+  // Login
+  let response = app.post_login(&login_body).await;
+  assert_eq!(response.status().as_u16(), 200);
 
-    let auth_cookie = response
-      .cookies()
-      .find(|cookie| cookie.name() == JWT_COOKIE_NAME)
-      .expect("No auth cookie found");
+  let auth_cookie = response
+    .cookies()
+    .find(|cookie| cookie.name() == JWT_COOKIE_NAME)
+    .expect("No auth cookie found");
 
-    assert!(!auth_cookie.value().is_empty());
+  assert!(!auth_cookie.value().is_empty());
 
-    let _token = auth_cookie.value();
+  let _token = auth_cookie.value();
 
-    // Logout
-    let response = app.post_logout().await;
-    assert_eq!(response.status().as_u16(), 200);
+  // Logout
+  let response = app.post_logout().await;
+  assert_eq!(response.status().as_u16(), 200);
 
-    let auth_cookie = response
-      .cookies()
-      .find(|cookie| cookie.name() == JWT_COOKIE_NAME)
-      .expect("No auth cookie found");
-    assert!(auth_cookie.value().is_empty());
+  let auth_cookie = response
+    .cookies()
+    .find(|cookie| cookie.name() == JWT_COOKIE_NAME)
+    .expect("No auth cookie found");
+  assert!(auth_cookie.value().is_empty());
 
-    // Logout 2nd time
-    let response = app.post_logout().await;
-    assert_eq!(response.status().as_u16(), 400);
-
+  // Logout 2nd time
+  let response = app.post_logout().await;
+  assert_eq!(response.status().as_u16(), 400);
 }
 
 #[tokio::test]
 async fn should_return_401_if_invalid_token() {
-    let app = TestApp::new().await;
+  let app = TestApp::new().await;
 
-    // add invalid cookie
-    app.cookie_jar.add_cookie_str(
-        &format!(
-            "{}=invalid; HttpOnly; SameSite=Lax; Secure; Path=/",
-            JWT_COOKIE_NAME
-        ),
-        &Url::parse("http://127.0.0.1").expect("Failed to parse URL"),
-    );
+  // add invalid cookie
+  app.cookie_jar.add_cookie_str(
+    &format!(
+      "{}=invalid; HttpOnly; SameSite=Lax; Secure; Path=/",
+      JWT_COOKIE_NAME
+    ),
+    &Url::parse("http://127.0.0.1").expect("Failed to parse URL"),
+  );
 
-    let response = app.post_logout().await;
-    assert_eq!(response.status().as_u16(), 401);
+  let response = app.post_logout().await;
+  assert_eq!(response.status().as_u16(), 401);
 
-    let auth_cookie = response
-      .cookies()
-      .find(|cookie| cookie.name() == JWT_COOKIE_NAME);
-    assert!(auth_cookie.is_none());
-    assert_eq!(
-        response
-          .json::<ErrorResponse>()
-          .await
-          .expect("Could not deserialize response body to ErrorResponse")
-          .error,
-        "Invalid auth token".to_owned()
-    );
-
+  let auth_cookie = response
+    .cookies()
+    .find(|cookie| cookie.name() == JWT_COOKIE_NAME);
+  assert!(auth_cookie.is_none());
+  assert_eq!(
+    response
+      .json::<ErrorResponse>()
+      .await
+      .expect("Could not deserialize response body to ErrorResponse")
+      .error,
+    "Invalid auth token".to_owned()
+  );
 }

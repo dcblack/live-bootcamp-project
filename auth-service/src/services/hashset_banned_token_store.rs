@@ -1,5 +1,5 @@
-use std::collections::HashSet;
 use crate::domain::{BannedTokenStore, BannedTokenStoreError};
+use std::collections::HashSet;
 
 #[derive(Default)]
 pub struct HashsetBannedTokenStore {
@@ -16,10 +16,7 @@ impl BannedTokenStore for HashsetBannedTokenStore {
     Ok(())
   }
 
-  async fn is_banned(
-    &self,
-    token: &str,
-  ) -> bool {
+  async fn is_banned(&self, token: &str) -> bool {
     return self.tokens.contains(token);
   }
 }

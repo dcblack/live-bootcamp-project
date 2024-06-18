@@ -1,15 +1,11 @@
+use crate::{
+  app_state::AppState,
+  domain::{AuthAPIError, Email, LoginAttemptId, TwoFACode},
+  utils::auth::generate_auth_cookie,
+};
 use axum::{extract::State, response::IntoResponse, Json};
 use axum_extra::extract::CookieJar;
 use serde::Deserialize;
-use crate::{
-  app_state::AppState,
-  domain::{
-    AuthAPIError,
-    Email, LoginAttemptId,
-    TwoFACode,
-  },
-  utils::auth::generate_auth_cookie,
-};
 
 const FAIL: &str = "[1;91m⚠ FAIL: [00m";
 
@@ -17,8 +13,7 @@ pub async fn verify_2fa(
   State(state): State<AppState>,
   jar: CookieJar,
   Json(request): Json<Verify2FARequest>,
-) -> (CookieJar, Result<impl IntoResponse, AuthAPIError>)
-{
+) -> (CookieJar, Result<impl IntoResponse, AuthAPIError>) {
   // Check email
   let email = match Email::parse(request.email) {
     Ok(email) => email,
@@ -34,11 +29,8 @@ pub async fn verify_2fa(
     return (jar, Err(AuthAPIError::Invalid2FACode));
   };
 
-  let mut two_fa_code_store
-    = state.two_fa_code_store.write()
-           .await;
-  let attempt_n_code
-    = match two_fa_code_store.get_code(&email).await {
+  let mut two_fa_code_store = state.two_fa_code_store.write().await;
+  let attempt_n_code = match two_fa_code_store.get_code(&email).await {
     Ok(attempt_n_code) => attempt_n_code,
     Err(_) => return (jar, Err(AuthAPIError::IncorrectCredentials)),
   };

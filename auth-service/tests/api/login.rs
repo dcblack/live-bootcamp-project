@@ -1,16 +1,10 @@
 //use serde::{Deserialize, Serialize};
+use crate::helpers::{get_random_email, TestApp, EMPTY_PASSWORD, GREAT_PASSWORD, WRONG_PASSWORD};
 use auth_service::{
-  utils::constants::JWT_COOKIE_NAME,
   //domain::{Email, TwoFACode, },
   routes::TwoFactorAuthResponse,
   //ErrorResponse,
-};
-use crate::helpers::{
-  get_random_email,
-  TestApp,
-  GREAT_PASSWORD,
-  WRONG_PASSWORD,
-  EMPTY_PASSWORD,
+  utils::constants::JWT_COOKIE_NAME,
 };
 
 #[tokio::test]
@@ -20,19 +14,19 @@ async fn should_return_200_if_valid_credentials_and_2fa_disabled() {
   let random_email = get_random_email();
 
   let signup_body = serde_json::json!({
-        "email": random_email,
-        "password": GREAT_PASSWORD,
-        "requires2FA": false
-    });
+      "email": random_email,
+      "password": GREAT_PASSWORD,
+      "requires2FA": false
+  });
 
   let response = app.post_signup(&signup_body).await;
 
   assert_eq!(response.status().as_u16(), 201);
 
   let login_body = serde_json::json!({
-        "email": random_email,
-        "password": GREAT_PASSWORD,
-    });
+      "email": random_email,
+      "password": GREAT_PASSWORD,
+  });
 
   let response = app.post_login(&login_body).await;
 
@@ -53,19 +47,19 @@ async fn should_return_206_if_valid_credentials_and_2fa_enabled() {
   let random_email = get_random_email();
 
   let signup_body = serde_json::json!({
-        "email": random_email,
-        "password": GREAT_PASSWORD,
-        "requires2FA": true
-    });
+      "email": random_email,
+      "password": GREAT_PASSWORD,
+      "requires2FA": true
+  });
 
   let response = app.post_signup(&signup_body).await;
 
   assert_eq!(response.status().as_u16(), 201);
 
   let login_body = serde_json::json!({
-        "email": random_email,
-        "password": GREAT_PASSWORD,
-    });
+      "email": random_email,
+      "password": GREAT_PASSWORD,
+  });
 
   let response = app.post_login(&login_body).await;
 
@@ -83,7 +77,6 @@ async fn should_return_206_if_valid_credentials_and_2fa_enabled() {
   // assert!(!auth_cookie.value().is_empty());
 }
 
-
 #[tokio::test]
 async fn should_return_400_if_invalid_input() {
   // Call the log-in route with invalid credentials and assert that a
@@ -94,17 +87,17 @@ async fn should_return_400_if_invalid_input() {
 
   let input = [
     serde_json::json!({
-            "email": "", // empty email
-            "password": EMPTY_PASSWORD, // empty password
-        }),
+        "email": "", // empty email
+        "password": EMPTY_PASSWORD, // empty password
+    }),
     serde_json::json!({
-            "email": "", // empty email
-            "password": GREAT_PASSWORD,
-        }),
+        "email": "", // empty email
+        "password": GREAT_PASSWORD,
+    }),
     serde_json::json!({
-            "email": random_email,
-            "password": EMPTY_PASSWORD, // empty password
-        }),
+        "email": random_email,
+        "password": EMPTY_PASSWORD, // empty password
+    }),
   ];
   for i in input.iter() {
     let response = app.post_login(i).await;
@@ -120,31 +113,24 @@ async fn should_return_401_if_incorrect_credentials() {
 
   let random_email = get_random_email();
 
-  let input = [
-    serde_json::json!({
-            "email": random_email, // missing @domain
-            "password": WRONG_PASSWORD,
-        }),
-  ];
+  let input = [serde_json::json!({
+      "email": random_email, // missing @domain
+      "password": WRONG_PASSWORD,
+  })];
   for i in input.iter() {
     let response = app.post_login(i).await;
     assert_eq!(response.status().as_u16(), 401, "Failed for input: {:?}", i);
   }
-
 }
 
 #[tokio::test]
 async fn should_return_422_if_malformed_credentials() {
   let app = TestApp::new().await;
 
-  let input = [
-    serde_json::json!({
-        }),
-  ];
+  let input = [serde_json::json!({})];
 
   for i in input.iter() {
     let response = app.post_login(i).await;
     assert_eq!(response.status().as_u16(), 422, "Failed for input: {:?}", i);
   }
 }
-

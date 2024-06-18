@@ -12,7 +12,12 @@ pub struct HashmapTwoFACodeStore {
 
 #[async_trait::async_trait]
 impl TwoFACodeStore for HashmapTwoFACodeStore {
-  async fn add_code(&mut self, email: Email, login_attempt_id: LoginAttemptId, two_fa_code: TwoFACode) -> Result<(), TwoFACodeStoreError> {
+  async fn add_code(
+    &mut self,
+    email: Email,
+    login_attempt_id: LoginAttemptId,
+    two_fa_code: TwoFACode,
+  ) -> Result<(), TwoFACodeStoreError> {
     if self.codes.contains_key(&email) {
       return Err(TwoFACodeStoreError::UnexpectedError);
     }
@@ -27,13 +32,15 @@ impl TwoFACodeStore for HashmapTwoFACodeStore {
     }
   }
 
-  async fn get_code(&self, email: &Email) -> Result<(LoginAttemptId, TwoFACode), TwoFACodeStoreError> {
+  async fn get_code(
+    &self,
+    email: &Email,
+  ) -> Result<(LoginAttemptId, TwoFACode), TwoFACodeStoreError> {
     match self.codes.get(email) {
       Some(value) => Ok(value.clone()),
       None => Err(TwoFACodeStoreError::LoginAttemptIdNotFound),
     }
   }
-
 }
 
 #[cfg(test)]
@@ -48,11 +55,15 @@ mod tests {
     let login_attempt_id = LoginAttemptId::default();
 
     // Test adding a new two_fa_code
-    let result = code_store.add_code(email.clone(),login_attempt_id.clone(),two_fa_code.clone()).await;
+    let result = code_store
+      .add_code(email.clone(), login_attempt_id.clone(), two_fa_code.clone())
+      .await;
     assert!(result.is_ok());
 
     // Test adding an existing two_fa_code
-    let result = code_store.add_code(email,login_attempt_id,two_fa_code).await;
+    let result = code_store
+      .add_code(email, login_attempt_id, two_fa_code)
+      .await;
     assert_eq!(result, Err(TwoFACodeStoreError::UnexpectedError));
   }
 
@@ -65,15 +76,15 @@ mod tests {
     let two_fa_code = TwoFACode::default();
 
     // Test getting a two_fa_code that exists
-    let result = code_store.add_code(email.clone(), login_attempt_id.clone(), two_fa_code.clone()).await;
+    let result = code_store
+      .add_code(email.clone(), login_attempt_id.clone(), two_fa_code.clone())
+      .await;
     assert!(result.is_ok());
     let result = code_store.get_code(&email).await;
-    assert_eq!(result, Ok((login_attempt_id,two_fa_code)));
+    assert_eq!(result, Ok((login_attempt_id, two_fa_code)));
 
     // Test getting a two_fa_code that doesn't exist
-    let result = code_store
-      .get_code(&bogus)
-      .await;
+    let result = code_store.get_code(&bogus).await;
 
     assert_eq!(result, Err(TwoFACodeStoreError::LoginAttemptIdNotFound));
   }
@@ -86,7 +97,9 @@ mod tests {
     let login_attempt_id = LoginAttemptId::default();
     let two_fa_code = TwoFACode::default();
 
-    let result = code_store.add_code(email.clone(), login_attempt_id.clone(), two_fa_code.clone()).await;
+    let result = code_store
+      .add_code(email.clone(), login_attempt_id.clone(), two_fa_code.clone())
+      .await;
     assert!(result.is_ok());
     let result = code_store.get_code(&email).await;
     assert_eq!(result, Ok((login_attempt_id, two_fa_code)));

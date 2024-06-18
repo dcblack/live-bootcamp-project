@@ -4,9 +4,8 @@ use std::env as std_env;
 
 // Define a lazily evaluated static. lazy_static is needed because std_env::var is not a const function.
 lazy_static! {
-    pub static ref JWT_SECRET: String = set_token();
+  pub static ref JWT_SECRET: String = set_token();
 }
-
 
 fn set_token() -> String {
   dotenv().ok(); // Load environment variables
