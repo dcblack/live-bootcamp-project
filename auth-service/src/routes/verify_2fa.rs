@@ -30,7 +30,7 @@ pub async fn verify_2fa(
   };
 
   let mut two_fa_code_store = state.two_fa_code_store.write().await;
-  let attempt_n_code = match two_fa_code_store.get_code(&email).await {
+  let attempt_n_code = match two_fa_code_store.get_2fa_code(&email).await {
     Ok(attempt_n_code) => attempt_n_code,
     Err(_) => return (jar, Err(AuthAPIError::IncorrectCredentials)),
   };

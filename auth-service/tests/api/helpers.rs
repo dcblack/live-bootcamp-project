@@ -22,10 +22,10 @@ pub const SHORT_PASSWORD: &str = "_bCdef$12ee"; // with valid characters
 pub const EMPTY_PASSWORD: &str = "";
 
 // Useful for highlighting messages
-pub const NOTE: &str = "[1;96mNOTE: [00m";
-pub const WARN: &str = "[1;93m⚠ WARNING: [00m";
-pub const ALERT: &str = "[1;95m⚠ ALERT: [00m";
-pub const FAIL: &str = "[1;91m⚠ FAIL: [00m";
+// pub const NOTE: &str = "[1;96mNOTE: [00m";
+// pub const WARN: &str = "[1;93m⚠ WARNING: [00m";
+// pub const ALERT: &str = "[1;95m⚠ ALERT: [00m";
+// pub const FAIL: &str = "[1;91m⚠ FAIL: [00m";
 
 pub struct TestApp {
   pub address: String,

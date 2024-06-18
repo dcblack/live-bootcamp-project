@@ -18,9 +18,9 @@ impl TwoFACodeStore for HashmapTwoFACodeStore {
     login_attempt_id: LoginAttemptId,
     two_fa_code: TwoFACode,
   ) -> Result<(), TwoFACodeStoreError> {
-    if self.codes.contains_key(&email) {
-      return Err(TwoFACodeStoreError::UnexpectedError);
-    }
+    // if self.codes.contains_key(&email) {
+    //   return Err(TwoFACodeStoreError::UnexpectedError);
+    // }
     self.codes.insert(email, (login_attempt_id, two_fa_code));
     Ok(())
   }
@@ -32,7 +32,7 @@ impl TwoFACodeStore for HashmapTwoFACodeStore {
     }
   }
 
-  async fn get_code(
+  async fn get_2fa_code(
     &self,
     email: &Email,
   ) -> Result<(LoginAttemptId, TwoFACode), TwoFACodeStoreError> {
@@ -60,11 +60,11 @@ mod tests {
       .await;
     assert!(result.is_ok());
 
-    // Test adding an existing two_fa_code
-    let result = code_store
-      .add_code(email, login_attempt_id, two_fa_code)
-      .await;
-    assert_eq!(result, Err(TwoFACodeStoreError::UnexpectedError));
+    // // Test adding an existing two_fa_code
+    // let result = code_store
+    //   .add_code(email, login_attempt_id, two_fa_code)
+    //   .await;
+    // assert_eq!(result, Err(TwoFACodeStoreError::UnexpectedError));
   }
 
   #[tokio::test]
@@ -80,11 +80,11 @@ mod tests {
       .add_code(email.clone(), login_attempt_id.clone(), two_fa_code.clone())
       .await;
     assert!(result.is_ok());
-    let result = code_store.get_code(&email).await;
+    let result = code_store.get_2fa_code(&email).await;
     assert_eq!(result, Ok((login_attempt_id, two_fa_code)));
 
     // Test getting a two_fa_code that doesn't exist
-    let result = code_store.get_code(&bogus).await;
+    let result = code_store.get_2fa_code(&bogus).await;
 
     assert_eq!(result, Err(TwoFACodeStoreError::LoginAttemptIdNotFound));
   }
@@ -101,7 +101,7 @@ mod tests {
       .add_code(email.clone(), login_attempt_id.clone(), two_fa_code.clone())
       .await;
     assert!(result.is_ok());
-    let result = code_store.get_code(&email).await;
+    let result = code_store.get_2fa_code(&email).await;
     assert_eq!(result, Ok((login_attempt_id, two_fa_code)));
 
     // Remove existing code

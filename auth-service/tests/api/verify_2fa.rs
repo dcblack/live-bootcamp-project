@@ -9,11 +9,12 @@ use auth_service::{
 use crate::helpers::{
   get_random_email,
   TestApp,
-  ALERT,
   GREAT_PASSWORD,
   //WRONG_PASSWORD,
   //EMPTY_PASSWORD,
-  NOTE,
+  //-- Debug help
+  //ALERT,
+  //NOTE,
 };
 
 #[tokio::test]
@@ -122,7 +123,7 @@ async fn should_return_401_if_old_code() {
       "password": GREAT_PASSWORD
   });
 
-  println!("{NOTE}First login for {:?}", random_email.clone());
+  //println!("{NOTE}First login for {:?}", random_email.clone());
   let response = app.post_login(&login_body).await;
 
   assert_eq!(response.status().as_u16(), 206);
@@ -141,19 +142,19 @@ async fn should_return_401_if_old_code() {
     .two_fa_code_store
     .read()
     .await
-    .get_code(&Email::parse(random_email.clone()).unwrap())
+    .get_2fa_code(&Email::parse(random_email.clone()).unwrap())
     .await
     .unwrap();
 
   let first_code = attempt_n_code.1.as_ref();
 
   // Second login call
-  println!("{NOTE}Second login for {:?}", random_email.clone());
+  //println!("{NOTE}Second login for {:?}", random_email.clone());
 
   let response = app.post_login(&login_body).await;
 
-  println!("{ALERT}Known bug - should be 206");
-  assert_eq!(response.status().as_u16(), 500);
+//println!("{ALERT}Known bug - should be 206");
+  assert_eq!(response.status().as_u16(), 206);
 
   // 2FA attempt with old login_attempt_id and first code
 
@@ -163,11 +164,11 @@ async fn should_return_401_if_old_code() {
       "2FACode": first_code
   });
 
-  println!("{NOTE}Verify 2FA for {:?}", random_email.clone());
+  //println!("{NOTE}Verify 2FA for {:?}", random_email.clone());
   let response = app.post_verify_2fa(&request_body).await;
 
-  println!("{ALERT}Known bug - should be 401 (fix 500 above)");
-  assert_eq!(response.status().as_u16(), 200);
+//println!("{ALERT}Known bug - should be 401 (fix 500 above)");
+  assert_eq!(response.status().as_u16(), 401);
 }
 
 #[tokio::test]
